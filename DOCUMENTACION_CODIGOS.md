@@ -512,6 +512,375 @@ BFS en grafo no ponderado garantiza camino mínimo en cantidad de pasos.
   2) modelar estructura de datos,
   3) recorrer/procesar,
   4) imprimir el resultado exacto pedido.
+
+
+---
+
+## Anexo: códigos completos
+
+### `codigos de estructuras/semana 9/Punto A semana 9.py`
+
+```python
+# Leemos el número de hojas
+n = int(input())
+
+# Creamos un conjunto para guardar las combinaciones únicas
+hojas_unicas = set()
+
+for _ in range(n):
+    # Leemos la línea que contiene "especie color"
+    hoja = input()
+    # La añadimos al conjunto
+    hojas_unicas.add(hoja)
+
+# El tamaño del conjunto será el número de hojas diferentes recogidas
+print(len(hojas_unicas))
+```
+
+### `codigos de estructuras/semana 9/Punto B semana 9.py`
+
+```python
+import sys
+
+def resolver():
+    # Leemos todas las líneas de la entrada estándar
+    lineas = sys.stdin.read().splitlines()
+    
+    # Procesamos las líneas de dos en dos
+    for i in range(0, len(lineas), 2):
+        # Es posible que la última pareja esté incompleta si el archivo termina mal
+        if i + 1 >= len(lineas):
+            break
+            
+        a = lineas[i]
+        b = lineas[i+1]
+        
+        resultado = []
+        
+        # Recorremos las letras del abecedario en orden
+        for char_code in range(ord('a'), ord('z') + 1):
+            letra = chr(char_code)
+            
+            # Contamos cuántas veces aparece la letra en cada cadena
+            conteo_a = a.count(letra)
+            conteo_b = b.count(letra)
+            
+            # El número de veces que incluimos la letra es el mínimo de ambos
+            veces = min(conteo_a, conteo_b)
+            
+            # Añadimos la letra esa cantidad de veces a nuestra lista
+            resultado.append(letra * veces)
+        
+        # Unimos todo en una sola cadena y la imprimimos
+        print("".join(resultado))
+
+if __name__ == "__main__":
+    resolver()
+```
+
+### `codigos de estructuras/semana 9/Punto E semana 9.py`
+
+```python
+import sys
+
+def resolver():
+    n = int(input())
+    rondas = []
+    puntajes_finales = {}
+
+    # 1. Guardamos las rondas y calculamos el puntaje total de cada uno al final
+    for _ in range(n):
+        nombre, puntos = input().split()
+        puntos = int(puntos)
+        rondas.append((nombre, puntos))
+        puntajes_finales[nombre] = puntajes_finales.get(nombre, 0) + puntos
+
+    max_puntaje = max(puntajes_finales.values())
+
+    puntajes_actuales = {}
+    for nombre, puntos in rondas:
+        puntajes_actuales[nombre] = puntajes_actuales.get(nombre, 0) + puntos
+        
+        if puntajes_actuales[nombre] >= max_puntaje and puntajes_finales[nombre] == max_puntaje:
+            print(nombre)
+            break
+
+resolver()
+```
+
+### `codigos de estructuras/semana 9/Punto I semana 9.py`
+
+```python
+import sys
+
+def resolver():
+    # Leemos la cadena y eliminamos espacios en blanco
+    s = sys.stdin.readline().strip()
+    if not s:
+        return
+
+    n = len(s)
+    # dp[i] guardará el grado de palíndromo del prefijo de longitud i
+    dp = [0] * (n + 1)
+    
+    # Variables para el Rolling Hash
+    h1 = 0  # Hash hacia adelante
+    h2 = 0  # Hash hacia atrás
+    base = 131  # Un número primo como base
+    pw = 1      # Potencia de la base
+    mod = 10**9 + 7  # Un módulo grande para evitar colisiones
+    
+    total_suma = 0
+    
+    for i in range(1, n + 1):
+        char_val = ord(s[i-1])
+        
+        # Actualizamos hash hacia adelante: (h1 * base + nuevo_caracter)
+        h1 = (h1 * base + char_val) % mod
+        
+        # Actualizamos hash hacia atrás: (h2 + nuevo_caracter * base^(i-1))
+        h2 = (h2 + char_val * pw) % mod
+        pw = (pw * base) % mod
+        
+        # Si los hashes coinciden, el prefijo es un palíndromo
+        if h1 == h2:
+            # El grado es: 1 + el grado de su mitad izquierda
+            # La mitad izquierda de un prefijo de longitud i es i // 2
+            dp[i] = dp[i // 2] + 1
+            total_suma += dp[i]
+        else:
+            # No es palíndromo, su grado es 0
+            dp[i] = 0
+            
+    print(total_suma)
+
+if __name__ == "__main__":
+    resolver()
+```
+
+### `codigos de estructuras/semana 10/punto C semana 10.py`
+
+```python
+import sys
+
+def resolver_grafos():
+    # Leemos toda la entrada de golpe. split() maneja saltos de línea 
+    # y múltiples espacios perfectamente para este tipo de problemas.
+    input_data = sys.stdin.read().split()
+    if not input_data:
+        return
+        
+    idx = 0
+    while idx < len(input_data):
+        n = int(input_data[idx])
+        idx += 1
+        
+        if n == 0:
+            break 
+
+        adj = {i: [] for i in range(1, n + 1)}
+        
+       
+        while True:
+            u = int(input_data[idx])
+            idx += 1
+            if u == 0:
+                break 
+            
+            while True:
+                v = int(input_data[idx])
+                idx += 1
+                if v == 0:
+                    break
+                adj[u].append(v)
+                
+        num_queries = int(input_data[idx])
+        idx += 1
+        
+        for _ in range(num_queries):
+            start_node = int(input_data[idx])
+            idx += 1
+            
+            visited = [False] * (n + 1)
+            queue = [start_node]
+            
+            while queue:
+                curr = queue.pop(0)
+                for neighbor in adj[curr]:
+                    if not visited[neighbor]:
+                        visited[neighbor] = True
+                        queue.append(neighbor)
+                        
+            inaccessible = [i for i in range(1, n + 1) if not visited[i]]
+            
+            output = [len(inaccessible)] + inaccessible
+            print(" ".join(map(str, output)))
+
+if __name__ == '__main__':
+    resolver_grafos()
+```
+
+### `codigos de estructuras/semana 10/punto E semana 10.py`
+
+```python
+import sys
+
+def resolver_dominos():
+    input_data = sys.stdin.read().split()
+    if not input_data:
+        return
+        
+    idx = 0
+    num_test_cases = int(input_data[idx])
+    idx += 1
+    
+    for _ in range(num_test_cases):
+        n = int(input_data[idx]) 
+        m = int(input_data[idx+1]) 
+        l = int(input_data[idx+2]) 
+        idx += 3
+        
+        adj = [[] for _ in range(n + 1)]
+        
+        for _ in range(m):
+            x = int(input_data[idx])
+            y = int(input_data[idx+1])
+            adj[x].append(y)
+            idx += 2
+            
+        caidas = [False] * (n + 1)
+        stack = []
+        
+        for _ in range(l):
+            z = int(input_data[idx])
+            idx += 1
+            if not caidas[z]:
+                caidas[z] = True
+                stack.append(z)
+                
+        total_caidas = 0
+        while stack:
+            actual = stack.pop()
+            total_caidas += 1 
+            
+            for vecino in adj[actual]:
+                if not caidas[vecino]:
+                    caidas[vecino] = True
+                    stack.append(vecino)
+                    
+        print(total_caidas)
+
+if __name__ == '__main__':
+    resolver_dominos()
+```
+
+### `codigos de estructuras/semana 10/punto F semana 10.py`
+
+```python
+import sys
+from collections import deque
+
+def resolver_red():
+    input = sys.stdin.read().split()
+    if not input:
+        return
+        
+    n = int(input[0])
+    m = int(input[1])
+    
+    adj = [[] for _ in range(n + 1)]
+    ptr = 2
+    for _ in range(m):
+        u = int(input[ptr])
+        v = int(input[ptr+1])
+        adj[u].append(v)
+        adj[v].append(u)
+        ptr += 2
+        
+    parent = [0] * (n + 1)
+    dist = [-1] * (n + 1)
+    
+    queue = deque([1])
+    dist[1] = 1
+    
+    while queue:
+        u = queue.popleft()
+        
+        if u == n: 
+            break
+            
+        for v in adj[u]:
+            if dist[v] == -1: 
+                dist[v] = dist[u] + 1
+                parent[v] = u
+                queue.append(v)
+                
+    if dist[n] == -1:
+        print("IMPOSSIBLE")
+    else:
+        camino = []
+        actual = n
+        while actual != 0:
+            camino.append(actual)
+            actual = parent[actual]
+            
+        camino.reverse()
+        
+        print(len(camino))
+        print(*(camino))
+
+if __name__ == '__main__':
+    resolver_red()
+```
+
+### `codigos de estructuras/semana 10/punto G semana 10.py`
+
+```python
+import sys
+
+sys.setrecursionlimit(200000)
+
+def resolver_carreteras():
+    input_data = sys.stdin.read().split()
+    if not input_data:
+        return
+        
+    n = int(input_data[0])
+    m = int(input_data[1])
+    
+    adj = [[] for _ in range(n + 1)]
+    idx = 2
+    for _ in range(m):
+        u = int(input_data[idx])
+        v = int(input_data[idx+1])
+        adj[u].append(v)
+        adj[v].append(u)
+        idx += 2
+        
+    visitados = [False] * (n + 1)
+    representantes = [] 
+
+    for i in range(1, n + 1):
+        if not visitados[i]:
+            representantes.append(i)
+            stack = [i]
+            visitados[i] = True
+            while stack:
+                u = stack.pop()
+                for vecino in adj[u]:
+                    if not visitados[vecino]:
+                        visitados[vecino] = True
+                        stack.append(vecino)
+    
+    k = len(representantes) - 1
+    print(k)
+    
+    for i in range(k):
+        print(f"{representantes[i]} {representantes[i+1]}")
+
+if __name__ == '__main__':
+    resolver_carreteras()
+```
 ### Objetivo
 Encontrar componentes conexas de un grafo no dirigido y proponer carreteras para conectar todo el país con el mínimo de nuevas conexiones.
 
